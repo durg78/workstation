@@ -1,39 +1,35 @@
-wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-sudo sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-sudo apt-get update
-sudo apt-get install google-chrome-stable
+#!/bin/bash
 
-sudo apt-get install evolution-ews
+wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+apt-get update
+apt-get install google-chrome-stable evolution-ews sudo vim chrome-gnome-shell realmd adcli sssd samba ntp libsss-sudo cifs-utils task-print-server
 
-wget https://sourceforge.net/projects/pacmanager/files/latest/download
-sudo dpkg -i pac-*.deb
-sudo apt-get -f install
+wget -O pac-manager.deb https://sourceforge.net/projects/pacmanager/files/latest/download
+wget -O atom-amd64.deb https://atom.io/download/deb
+dpkg -i pac-manager.deb
+dpkg -i atom.deb
+apt-get -f install
 
-wget https://atom.io/download/deb
-sudo dpkg -i atom.deb
-sudo apt-get -f install
 
-apt-get install sudo
-sudo apt-get install vim
-
-***sudo vim /etc/ssh/ssh_config
+echo "KexAlgorithms diffie-hellman-group1-sha1" >> /etc/ssh/ssh_config
 ssh-keygen -A
-sudo apt-get install ifconfig
-sudo apt-get update
-sudo apt-get install chrome-gnome-shell
 
-sudo apt-get install realmd adcli sssd
-sudo apt-get install samba
-sudo apt-get install ntp
-***sudo vim /etc/ntp.conf
-sudo systemctl restart ntp
-sudo mkdir -p /var/lib/samba/private
-sudo realm discover domain.com
-sudo realm join --user=user domain.com
-sudo systemctl enable sssd
-sudo systemctl start sssd
+systemctl restart ntp
+mkdir -p /var/lib/samba/private
 
-***sudo gedit /etc/pam.d/common-session
-***sudo gedit /etc/sudoers.d/domain_admins
-***sudo gedit /etc/sudoers
-sudo systemctl restart sudo.service
+echo "Please enter the domain you wish to join: "
+read DOMAIN
+echo "Please enter a domain admin login to use: "
+read ADMIN
+
+realm join --user=$ADMIN $DOMAIN
+
+
+systemctl enable sssd
+systemctl start sssd
+
+echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" | tee -a /etc/pam.d/common-session
+echo "%domain\ admins@coxhealth.com ALL=(ALL) ALL" | tee -a /etc/sudoers.d/domain_admins
+sed -i -e 's/#includedir/includedir/g' /etc/sudoers
+systemctl restart sudo.service
