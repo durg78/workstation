@@ -3,12 +3,13 @@
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
 apt-get update
-apt-get install google-chrome-stable evolution-ews sudo vim chrome-gnome-shell realmd adcli sssd samba ntp libsss-sudo cifs-utils task-print-server
+apt-get install google-chrome-stable evolution-ews sudo vim chrome-gnome-shell realmd adcli sssd samba ntp libsss-sudo cifs-utils task-print-server libpam-mount ldap-utils keyutils krb5-user
+
 
 wget -O pac-manager.deb https://sourceforge.net/projects/pacmanager/files/latest/download
 wget -O atom-amd64.deb https://atom.io/download/deb
 dpkg -i pac-manager.deb
-dpkg -i atom.deb
+dpkg -i atom-amd64.deb
 apt-get -f install
 
 
@@ -30,6 +31,7 @@ systemctl enable sssd
 systemctl start sssd
 
 echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" | tee -a /etc/pam.d/common-session
-echo "%domain\ admins@coxhealth.com ALL=(ALL) ALL" | tee -a /etc/sudoers.d/domain_admins
+echo "%domain\ admins@$DOMAIN ALL=(ALL:ALL) ALL" | tee -a /etc/sudoers.d/domain_admins
+echo "%domain\ $ADMIN@$DOMAIN ALL=(ALL:ALL) ALL" | tee -a /etc/sudoers.d/local_admins
 sed -i -e 's/#includedir/includedir/g' /etc/sudoers
 systemctl restart sudo.service
